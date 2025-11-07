@@ -12,18 +12,18 @@ struct Weight_range {
   double end{0};
 };
 constexpr Weight_range DEFAULT_WEIGHT_RANGE{.begin = 0.1, .end = 0.01};
-template <size_t Num_Vars, size_t Swarm_Size>
-using Swarm = std::array<Particle<Num_Vars>, Swarm_Size>;
+template <size_t NUM_VARS, size_t Swarm_Size>
+using Swarm = std::array<Particle<NUM_VARS>, Swarm_Size>;
 
-template <size_t Num_Vars, size_t Swarm_Size> struct Solution {
-  Particle<Num_Vars> gBest{};
-  Swarm<Num_Vars, Swarm_Size> swarm{};
+template <size_t NUM_VARS, size_t Swarm_Size> struct Solution {
+  Particle<NUM_VARS> gBest{};
+  Swarm<NUM_VARS, Swarm_Size> swarm{};
 };
 
-template <size_t Num_Vars, size_t Swarm_Size = DEFAULT_SWARM_SIZE>
-[[nodiscard]] constexpr Solution<Num_Vars, Swarm_Size>
-pso(const variables<Num_Vars> &lower_bound,
-    const variables<Num_Vars> &upper_bound, const Problem &problem,
+template <size_t NUM_VARS, size_t Swarm_Size = DEFAULT_SWARM_SIZE>
+[[nodiscard]] constexpr Solution<NUM_VARS, Swarm_Size>
+pso(const variables<NUM_VARS> &lower_bound,
+    const variables<NUM_VARS> &upper_bound, const Problem &problem,
     const size_t max_iter = 1000,
     const Coefficient &coefficients = DEFAULT_COEFFICIENTS,
     const Weight_range &weight_range = DEFAULT_WEIGHT_RANGE,
@@ -39,13 +39,13 @@ pso(const variables<Num_Vars> &lower_bound,
     return std::pow(1 - (static_cast<double>(iter) / den), 1.0 / mu);
   };
 
-  Swarm<Num_Vars, Swarm_Size> swarm;
+  Swarm<NUM_VARS, Swarm_Size> swarm;
   for (auto &particle : swarm) {
     particle = Particle(lower_bound, upper_bound, problem);
   }
   auto gBest = swarm[0];
   for (size_t i = 0; i < max_iter; i++) {
-    if (auto current_best = Particle<Num_Vars>::get_Best(swarm);
+    if (auto current_best = Particle<NUM_VARS>::get_Best(swarm);
         current_best.dominates(gBest)) {
       gBest = current_best;
     }

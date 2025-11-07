@@ -24,17 +24,17 @@ struct Cost {
   double infeasiblity{0};
 };
 
-template <size_t Num_Vars> using variables = std::array<double, Num_Vars>;
+template <size_t NUM_VARS> using variables = std::array<double, NUM_VARS>;
 
 using Problem = std::function<Cost(std::span<double>)>;
 
-template <size_t Num_Vars> class Particle {
+template <size_t NUM_VARS> class Particle {
 public:
   constexpr Particle() = default;
-  constexpr Particle(variables<Num_Vars> lower, variables<Num_Vars> upper,
+  constexpr Particle(variables<NUM_VARS> lower, variables<NUM_VARS> upper,
                      const Problem &problem)
       : lower_bound{std::move(lower)}, upper_bound{std::move(upper)} {
-    for (size_t i = 0; i < Num_Vars; i++) {
+    for (size_t i = 0; i < NUM_VARS; i++) {
       position[i] = rnd::unifrnd(lower_bound[i], upper_bound[i]);
       velocity[i] = 0.0;
     }
@@ -73,12 +73,12 @@ public:
     out << "\tcost = " << cost.objective << '\n';
     out << "\tinfeasiblity = " << cost.infeasiblity << '\n';
     out << "\tx=(";
-    for (size_t i = 0; i < Num_Vars - 1; i++) {
+    for (size_t i = 0; i < NUM_VARS - 1; i++) {
       out << position[i] << ", ";
     }
     out << position.back() << ")\n";
     out << "\tv=(";
-    for (size_t i = 0; i < Num_Vars - 1; i++) {
+    for (size_t i = 0; i < NUM_VARS - 1; i++) {
       out << velocity[i] << ", ";
     }
     out << velocity.back() << ")\n";
@@ -86,7 +86,7 @@ public:
     out << "\t\tcost = " << pBest_cost.objective << '\n';
     out << "\t\tinfeasiblity = " << pBest_cost.infeasiblity << '\n';
     out << "\t\tx=(";
-    for (size_t i = 0; i < Num_Vars - 1; i++) {
+    for (size_t i = 0; i < NUM_VARS - 1; i++) {
       out << pBest[i] << ", ";
     }
     out << pBest.back() << ")\n";
@@ -94,12 +94,12 @@ public:
 
   constexpr void csv_out(std::ostream &out) const & {
     out << '"';
-    for (size_t i = 0; i < Num_Vars - 1; i++) {
+    for (size_t i = 0; i < NUM_VARS - 1; i++) {
       out << position[i] << ',';
     }
     out << position.back() << "\"," << cost.objective << ','
         << cost.infeasiblity << ",\"";
-    for (size_t i = 0; i < Num_Vars - 1; i++) {
+    for (size_t i = 0; i < NUM_VARS - 1; i++) {
       out << pBest[i] << ',';
     }
     out << pBest.back() << "\"," << pBest_cost.objective << ","
@@ -117,7 +117,7 @@ private:
   constexpr void
   updateV(const Particle &gBest, const double weight = DEFAULT_WEIGHT,
           const Coefficient &coefficients = DEFAULT_COEFFICIENTS) {
-    for (size_t i = 0; i < Num_Vars; i++) {
+    for (size_t i = 0; i < NUM_VARS; i++) {
       velocity[i] =
           (weight * velocity[i]) +
           (coefficients.personal * rnd::rand() * (pBest[i] - position[i])) +
@@ -126,7 +126,7 @@ private:
     }
   }
   constexpr void updateX() {
-    for (size_t i = 0; i < Num_Vars; i++) {
+    for (size_t i = 0; i < NUM_VARS; i++) {
       position[i] += velocity[i];
       if (position[i] > upper_bound[i] || position[i] < lower_bound[i]) {
         velocity[i] *= -1;
@@ -154,7 +154,7 @@ private:
     if (rnd::rand() > mutation_probablity) {
       return;
     }
-    const auto candidate = rnd::unifrnd<size_t>(0, Num_Vars - 1);
+    const auto candidate = rnd::unifrnd<size_t>(0, NUM_VARS - 1);
 
     const double delta_x =
         (upper_bound[candidate] - lower_bound[candidate]) * mutation_probablity;
@@ -174,11 +174,11 @@ private:
     }
   }
 
-  variables<Num_Vars> lower_bound{};
-  variables<Num_Vars> upper_bound{};
-  variables<Num_Vars> position{};
-  variables<Num_Vars> velocity{};
-  variables<Num_Vars> pBest{};
+  variables<NUM_VARS> lower_bound{};
+  variables<NUM_VARS> upper_bound{};
+  variables<NUM_VARS> position{};
+  variables<NUM_VARS> velocity{};
+  variables<NUM_VARS> pBest{};
   Cost cost{};
   Cost pBest_cost{};
 };
