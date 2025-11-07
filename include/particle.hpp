@@ -9,12 +9,12 @@
 #include <utility>
 
 namespace pso {
-struct Coeficient {
+struct Coefficient {
   double personal;
   double global;
 };
 
-constexpr Coeficient DEFAULT_COEFFICIENTS{.personal = 0.2, .global = 0.2};
+constexpr Coefficient DEFAULT_COEFFICIENTS{.personal = 0.2, .global = 0.2};
 constexpr double DEFAULT_WEIGHT = 0.5;
 constexpr double DEFAULT_MUTATION_PROBABLITY = 0.1;
 constexpr auto THRESHOLD = 0.5;
@@ -46,7 +46,7 @@ public:
   constexpr void
   update(const Particle &gBest, const Problem &problem,
          const double weight = DEFAULT_WEIGHT,
-         const Coeficient &coefficients = DEFAULT_COEFFICIENTS,
+         const Coefficient &coefficients = DEFAULT_COEFFICIENTS,
          const double mutation_probablity = DEFAULT_MUTATION_PROBABLITY) {
     updateV(gBest, weight, coefficients);
     updateX();
@@ -116,7 +116,7 @@ public:
 private:
   constexpr void
   updateV(const Particle &gBest, const double weight = DEFAULT_WEIGHT,
-          const Coeficient &coefficients = DEFAULT_COEFFICIENTS) {
+          const Coefficient &coefficients = DEFAULT_COEFFICIENTS) {
     for (size_t i = 0; i < Num_Vars; i++) {
       velocity[i] =
           (weight * velocity[i]) +

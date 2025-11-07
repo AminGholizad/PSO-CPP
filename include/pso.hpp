@@ -25,7 +25,7 @@ template <size_t Num_Vars, size_t Swarm_Size = DEFAULT_SWARM_SIZE>
 pso(const variables<Num_Vars> &lower_bound,
     const variables<Num_Vars> &upper_bound, const Problem &problem,
     const size_t max_iter = 1000,
-    const Coeficient &coeficients = DEFAULT_COEFFICIENTS,
+    const Coefficient &coefficients = DEFAULT_COEFFICIENTS,
     const Weight_range &weight_range = DEFAULT_WEIGHT_RANGE,
     const double mu = 0.1) {
   auto calc_weight = [&](size_t iter) {
@@ -53,7 +53,7 @@ pso(const variables<Num_Vars> &lower_bound,
     auto current_weight = calc_weight(i);
     auto current_mutation_propablity = calc_mutation_propablity(i);
     for (auto &particle : swarm) {
-      particle.update(gBest, problem, current_weight, coeficients,
+      particle.update(gBest, problem, current_weight, coefficients,
                       current_mutation_propablity);
     }
   }
