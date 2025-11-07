@@ -1,28 +1,41 @@
-#include <iostream>
-#include <fstream>
+// #include <iostream>
+// #include <fstream>
+#include "particle.hpp"
 #include "pso.hpp"
 #include <cmath>
-const double pi = 3.1415926535897932385;
-template<pso::ull N>
-std::pair<double,double>cost_fcn(pso::vars<N> x){
-  double s = 0.;
-  double c = 0.;
-  for (size_t i = 0; i < N; i++) {
-    s+=std::sin(x[i]*5)+std::sin(x[i]*7)+std::sin(x[i]*11);
-    c+=std::sin(x[i]);
+#include <cstddef>
+#include <numbers>
+#include <span>
+constexpr double pi = std::numbers::pi;
+[[nodiscard]] constexpr pso::Cost cost_fcn(std::span<double> variables) {
+  pso::Cost cost{.objective = 0.0, .infeasiblity = 0.0};
+  for (const auto &var : variables) {
+    cost.objective +=
+        std::sin(var * 5.0) + // NOLINT(readability-magic-numbers,
+                              // cppcoreguidelines-avoid-magic-numbers)
+        std::sin(var * 7.0) + // NOLINT(readability-magic-numbers,
+        // cppcoreguidelines-avoid-magic-numbers)
+        std::sin(var * 11.0); // NOLINT(readability-magic-numbers,
+                              // cppcoreguidelines-avoid-magic-numbers)
+    cost.infeasiblity += std::sin(var);
   }
-  s=std::abs(s);
-  c=std::abs(c/N-0.7);
-  return std::make_pair(s,c);
+  cost.objective = std::abs(cost.objective);
+  cost.infeasiblity =
+      std::abs((cost.infeasiblity / static_cast<double>(variables.size())) -
+               0.7); // NOLINT(readability-magic-numbers,
+                     // cppcoreguidelines-avoid-magic-numbers)
+  return cost;
 }
-int main(){
-  const pso::ull Nvars{4};
-  const pso::ull Swarm_size{200};
-  pso::vars<Nvars> l{0,0,0,0};
-  pso::vars<Nvars> u{pi/2,pi/2,pi/2,pi/2};
-  auto [solution,swarm] = pso::pso<Nvars,Swarm_size>(l,u,cost_fcn<Nvars>,2000);
-  solution.info();
-  std::ofstream f("./resualt.csv");
-  pso::Particle<Nvars>::csv_out(f,swarm);
+int main() {
+  const size_t Nvars{4};
+  const size_t Swarm_size{200};
+  const size_t max_iter{2000};
+  pso::variables<Nvars> lower_bound{0, 0, 0, 0};
+  pso::variables<Nvars> upper_bound{pi / 2, pi / 2, pi / 2, pi / 2};
+  auto solution =
+      pso::pso<Nvars, Swarm_size>(lower_bound, upper_bound, cost_fcn, max_iter);
+  solution.gBest.info();
+  // std::ofstream f("./resualt.csv");
+  // pso::Particle<Nvars>::csv_out(f,solution.swarm);
   return 0;
 }

@@ -1,26 +1,63 @@
 #ifndef PSO_H
 #define PSO_H
-#include <cmath>
 #include "particle.hpp"
+#include <array>
+#include <cmath>
+#include <cstddef>
 namespace pso {
-  template<ull N,ull S=100>
-  std::pair<Particle<N>,std::array<Particle<N>,S>> pso(const vars<N>& lower_bound,const vars<N>& upper_bound,const Problem<N>& problem,const size_t max_iter=1000,const std::array<double,2>& c={0.2,0.2},const std::array<double,2>& iw={0.1,0.01},const double mu=0.1){
-    auto w = [&](size_t it){ return ((max_iter - it) - (iw[0] - iw[1]))/max_iter + iw[1];};
-    auto pm = [&](size_t it){ return std::pow(1-it/(max_iter-1.),1/mu);};
-    std::array<Particle<N>,S> swarm;
-    for (size_t i = 0; i < S; i++)
-      swarm[i]=Particle(lower_bound,upper_bound,problem);
-    auto gBest = swarm[0];
-    for (size_t i = 0; i < max_iter; i++) {
-      if (auto tmp=Particle<N>::get_Best(swarm); tmp.dominates(gBest))
-        gBest=tmp;
-      auto wc = w(i);
-      auto pc = pm(i);
-      for (size_t j = 0; j < S; j++) {
-        swarm[j].update(gBest,problem,wc,c,pc);
-      }
-    }
-    return std::make_pair(gBest,swarm);
+constexpr auto DEFAULT_SWARM_SIZE = 100;
+
+struct Weight_range {
+  double begin{0};
+  double end{0};
+};
+constexpr Weight_range DEFAULT_WEIGHT_RANGE{.begin = 0.1, .end = 0.01};
+template <size_t Num_Vars, size_t Swarm_Size>
+using Swarm = std::array<Particle<Num_Vars>, Swarm_Size>;
+
+template <size_t Num_Vars, size_t Swarm_Size> struct Solution {
+  Particle<Num_Vars> gBest{};
+  Swarm<Num_Vars, Swarm_Size> swarm{};
+};
+
+template <size_t Num_Vars, size_t Swarm_Size = DEFAULT_SWARM_SIZE>
+[[nodiscard]] Solution<Num_Vars, Swarm_Size>
+pso(const variables<Num_Vars> &lower_bound,
+    const variables<Num_Vars> &upper_bound, const Problem &problem,
+    const size_t max_iter = 1000,
+    const Coeficient &coeficients = DEFAULT_COEFFICIENTS,
+    const Weight_range &weight_range = DEFAULT_WEIGHT_RANGE,
+    const double mu = 0.1) {
+  auto calc_weight = [&](size_t iter) {
+    return ((static_cast<double>(max_iter - iter) -
+             (weight_range.begin - weight_range.end)) /
+            static_cast<double>(max_iter)) +
+           weight_range.end;
+  };
+  auto calc_mutation_propablity = [&](size_t iter) {
+    const double den = max_iter > 1 ? static_cast<double>(max_iter) - 1.0 : 1.0;
+    return std::pow(1 - (static_cast<double>(iter) / den), 1.0 / mu);
+  };
+
+  Swarm<Num_Vars, Swarm_Size> swarm;
+  for (auto &particle : swarm) {
+    particle = Particle(lower_bound, upper_bound, problem);
   }
-} /* pso */
-#endif //PSO_H
+  auto gBest = swarm[0];
+  for (size_t i = 0; i < max_iter; i++) {
+    if (auto current_best = Particle<Num_Vars>::get_Best(swarm);
+        current_best.dominates(gBest)) {
+      gBest = current_best;
+    }
+
+    auto current_weight = calc_weight(i);
+    auto current_mutation_propablity = calc_mutation_propablity(i);
+    for (auto &particle : swarm) {
+      particle.update(gBest, problem, current_weight, coeficients,
+                      current_mutation_propablity);
+    }
+  }
+  return {gBest, swarm};
+}
+} // namespace pso
+#endif // PSO_H
