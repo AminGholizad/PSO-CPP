@@ -1,6 +1,6 @@
 # Particle swarm optimization (PSO)
 Particle swarm optimization algorithm ([PSO](https://en.wikipedia.org/wiki/Particle_swarm_optimization)) for a minimization problem. In this project, nonlinear constraints are implemented as infeasible solutions.
-This project is implemented in C++17.
+This project is using C++23 features.
 Constraints and objective in one function.
 
 # Features
