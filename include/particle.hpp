@@ -30,9 +30,9 @@ using Problem = std::function<Cost(std::span<double>)>;
 
 template <size_t Num_Vars> class Particle {
 public:
-  Particle() = default;
-  Particle(variables<Num_Vars> lower, variables<Num_Vars> upper,
-           const Problem &problem)
+  constexpr Particle() = default;
+  constexpr Particle(variables<Num_Vars> lower, variables<Num_Vars> upper,
+                     const Problem &problem)
       : lower_bound{std::move(lower)}, upper_bound{std::move(upper)} {
     for (size_t i = 0; i < Num_Vars; i++) {
       position[i] = rnd::unifrnd(lower_bound[i], upper_bound[i]);
@@ -43,10 +43,11 @@ public:
     pBest_cost = cost;
   }
 
-  void update(const Particle &gBest, const Problem &problem,
-              const double weight = DEFAULT_WEIGHT,
-              const Coeficient &coefficients = DEFAULT_COEFFICIENTS,
-              const double mutation_probablity = DEFAULT_MUTATION_PROBABLITY) {
+  constexpr void
+  update(const Particle &gBest, const Problem &problem,
+         const double weight = DEFAULT_WEIGHT,
+         const Coeficient &coefficients = DEFAULT_COEFFICIENTS,
+         const double mutation_probablity = DEFAULT_MUTATION_PROBABLITY) {
     updateV(gBest, weight, coefficients);
     updateX();
     cost = problem(position);
@@ -54,12 +55,12 @@ public:
     updatePBest();
   }
 
-  [[nodiscard]] bool dominates(const Particle &other) const & {
+  [[nodiscard]] constexpr bool dominates(const Particle &other) const & {
     return ((cost.infeasiblity <= other.cost.infeasiblity) &&
             (cost.objective < other.cost.objective));
   }
 
-  [[nodiscard]] static Particle get_Best(std::span<Particle> swarm) {
+  [[nodiscard]] constexpr static Particle get_Best(std::span<Particle> swarm) {
     return *std::min_element(
         swarm.begin(), swarm.end(),
         [](const auto &particle_a, const auto &particle_b) {
@@ -67,7 +68,7 @@ public:
         });
   }
 
-  void info(std::ostream &out = std::cout) const & {
+  constexpr void info(std::ostream &out = std::cout) const & {
     out << "particle info:\n";
     out << "\tcost = " << cost.objective << '\n';
     out << "\tinfeasiblity = " << cost.infeasiblity << '\n';
@@ -91,7 +92,7 @@ public:
     out << pBest.back() << ")\n";
   }
 
-  void csv_out(std::ostream &out) const & {
+  constexpr void csv_out(std::ostream &out) const & {
     out << '"';
     for (size_t i = 0; i < Num_Vars - 1; i++) {
       out << position[i] << ',';
@@ -105,7 +106,7 @@ public:
         << pBest_cost.infeasiblity << '\n';
   }
 
-  static void csv_out(std::ostream &out, std::span<Particle> swarm) {
+  constexpr static void csv_out(std::ostream &out, std::span<Particle> swarm) {
     out << "x,cost,infeasiblity,pBest,pBest_cost,pBest_infeasiblity\n";
     for (const auto &particle : swarm) {
       particle.csv_out(out);
@@ -113,8 +114,9 @@ public:
   }
 
 private:
-  void updateV(const Particle &gBest, const double weight = DEFAULT_WEIGHT,
-               const Coeficient &coefficients = DEFAULT_COEFFICIENTS) {
+  constexpr void
+  updateV(const Particle &gBest, const double weight = DEFAULT_WEIGHT,
+          const Coeficient &coefficients = DEFAULT_COEFFICIENTS) {
     for (size_t i = 0; i < Num_Vars; i++) {
       velocity[i] =
           (weight * velocity[i]) +
@@ -123,7 +125,7 @@ private:
            (gBest.position[i] - position[i]));
     }
   }
-  void updateX() {
+  constexpr void updateX() {
     for (size_t i = 0; i < Num_Vars; i++) {
       position[i] += velocity[i];
       if (position[i] > upper_bound[i] || position[i] < lower_bound[i]) {
@@ -138,7 +140,7 @@ private:
       }
     }
   }
-  void updatePBest() {
+  constexpr void updatePBest() {
     if ((cost.infeasiblity <= pBest_cost.infeasiblity) &&
         (cost.objective < pBest_cost.objective)) {
       pBest = position;
@@ -146,8 +148,9 @@ private:
       pBest_cost.infeasiblity = cost.infeasiblity;
     }
   }
-  void Mutate(const Problem &problem,
-              const double mutation_probablity = DEFAULT_MUTATION_PROBABLITY) {
+  constexpr void
+  Mutate(const Problem &problem,
+         const double mutation_probablity = DEFAULT_MUTATION_PROBABLITY) {
     if (rnd::rand() > mutation_probablity) {
       return;
     }

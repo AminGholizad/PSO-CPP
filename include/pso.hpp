@@ -21,7 +21,7 @@ template <size_t Num_Vars, size_t Swarm_Size> struct Solution {
 };
 
 template <size_t Num_Vars, size_t Swarm_Size = DEFAULT_SWARM_SIZE>
-[[nodiscard]] Solution<Num_Vars, Swarm_Size>
+[[nodiscard]] constexpr Solution<Num_Vars, Swarm_Size>
 pso(const variables<Num_Vars> &lower_bound,
     const variables<Num_Vars> &upper_bound, const Problem &problem,
     const size_t max_iter = 1000,
