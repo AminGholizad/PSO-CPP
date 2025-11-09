@@ -31,15 +31,15 @@ using Problem = std::function<Cost(std::span<double>)>;
 template <size_t NUM_VARS> class Particle {
 public:
   constexpr Particle() = default;
-  constexpr Particle(variables<NUM_VARS> lower, variables<NUM_VARS> upper,
-                     const Problem &problem)
+  Particle(variables<NUM_VARS> lower, variables<NUM_VARS> upper,
+           const Problem &problem)
       : lower_bound{std::move(lower)}, upper_bound{std::move(upper)} {
     for (size_t i = 0; i < NUM_VARS; i++) {
       position[i] = rnd::unifrnd(lower_bound[i], upper_bound[i]);
       velocity[i] = 0.0;
     }
     cost = problem(position);
-    pBest = position;
+    pBest_position = position;
     pBest_cost = cost;
   }
 
@@ -87,9 +87,9 @@ public:
     out << "\t\tinfeasiblity = " << pBest_cost.infeasiblity << '\n';
     out << "\t\tx=(";
     for (size_t i = 0; i < NUM_VARS - 1; i++) {
-      out << pBest[i] << ", ";
+      out << pBest_position[i] << ", ";
     }
-    out << pBest.back() << ")\n";
+    out << pBest_position.back() << ")\n";
   }
 
   constexpr void csv_out(std::ostream &out) const & {
@@ -100,9 +100,9 @@ public:
     out << position.back() << "\"," << cost.objective << ','
         << cost.infeasiblity << ",\"";
     for (size_t i = 0; i < NUM_VARS - 1; i++) {
-      out << pBest[i] << ',';
+      out << pBest_position[i] << ',';
     }
-    out << pBest.back() << "\"," << pBest_cost.objective << ","
+    out << pBest_position.back() << "\"," << pBest_cost.objective << ","
         << pBest_cost.infeasiblity << '\n';
   }
 
@@ -118,11 +118,11 @@ private:
   updateV(const Particle &gBest, const double weight = DEFAULT_WEIGHT,
           const Coefficient &coefficients = DEFAULT_COEFFICIENTS) {
     for (size_t i = 0; i < NUM_VARS; i++) {
-      velocity[i] =
-          (weight * velocity[i]) +
-          (coefficients.personal * rnd::rand() * (pBest[i] - position[i])) +
-          (coefficients.global * rnd::rand() *
-           (gBest.position[i] - position[i]));
+      velocity[i] = (weight * velocity[i]) +
+                    (coefficients.personal * rnd::rand() *
+                     (pBest_position[i] - position[i])) +
+                    (coefficients.global * rnd::rand() *
+                     (gBest.position[i] - position[i]));
     }
   }
   constexpr void updateX() {
@@ -143,7 +143,7 @@ private:
   constexpr void updatePBest() {
     if ((cost.infeasiblity <= pBest_cost.infeasiblity) &&
         (cost.objective < pBest_cost.objective)) {
-      pBest = position;
+      pBest_position = position;
       pBest_cost.objective = cost.objective;
       pBest_cost.infeasiblity = cost.infeasiblity;
     }
@@ -178,7 +178,7 @@ private:
   variables<NUM_VARS> upper_bound{};
   variables<NUM_VARS> position{};
   variables<NUM_VARS> velocity{};
-  variables<NUM_VARS> pBest{};
+  variables<NUM_VARS> pBest_position{};
   Cost cost{};
   Cost pBest_cost{};
 };

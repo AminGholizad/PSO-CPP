@@ -12,16 +12,16 @@ struct Weight_range {
   double end{0};
 };
 constexpr Weight_range DEFAULT_WEIGHT_RANGE{.begin = 0.1, .end = 0.01};
-template <size_t NUM_VARS, size_t Swarm_Size>
-using Swarm = std::array<Particle<NUM_VARS>, Swarm_Size>;
+template <size_t NUM_VARS, size_t SWARM_SIZE>
+using Swarm = std::array<Particle<NUM_VARS>, SWARM_SIZE>;
 
-template <size_t NUM_VARS, size_t Swarm_Size> struct Solution {
+template <size_t NUM_VARS, size_t SWARM_SIZE> struct Solution {
   Particle<NUM_VARS> gBest{};
-  Swarm<NUM_VARS, Swarm_Size> swarm{};
+  Swarm<NUM_VARS, SWARM_SIZE> swarm{};
 };
 
-template <size_t NUM_VARS, size_t Swarm_Size = DEFAULT_SWARM_SIZE>
-[[nodiscard]] constexpr Solution<NUM_VARS, Swarm_Size>
+template <size_t NUM_VARS, size_t SWARM_SIZE = DEFAULT_SWARM_SIZE>
+[[nodiscard]] constexpr Solution<NUM_VARS, SWARM_SIZE>
 pso(const variables<NUM_VARS> &lower_bound,
     const variables<NUM_VARS> &upper_bound, const Problem &problem,
     const size_t max_iter = 1000,
@@ -39,25 +39,25 @@ pso(const variables<NUM_VARS> &lower_bound,
     return std::pow(1 - (static_cast<double>(iter) / den), 1.0 / mu);
   };
 
-  Swarm<NUM_VARS, Swarm_Size> swarm;
+  Swarm<NUM_VARS, SWARM_SIZE> swarm;
   for (auto &particle : swarm) {
     particle = Particle(lower_bound, upper_bound, problem);
   }
-  auto gBest = swarm[0];
+  auto pBest_position = swarm[0];
   for (size_t i = 0; i < max_iter; i++) {
     if (auto current_best = Particle<NUM_VARS>::get_Best(swarm);
-        current_best.dominates(gBest)) {
-      gBest = current_best;
+        current_best.dominates(pBest_position)) {
+      pBest_position = current_best;
     }
 
     auto current_weight = calc_weight(i);
     auto current_mutation_propablity = calc_mutation_propablity(i);
     for (auto &particle : swarm) {
-      particle.update(gBest, problem, current_weight, coefficients,
+      particle.update(pBest_position, problem, current_weight, coefficients,
                       current_mutation_propablity);
     }
   }
-  return {gBest, swarm};
+  return {pBest_position, swarm};
 }
 } // namespace pso
 #endif // PSO_H
