@@ -45,13 +45,13 @@ pso(const variables<NUM_VARS> &lower_bound,
   }
   auto pBest_position = swarm[0];
   for (size_t i = 0; i < max_iter; i++) {
-    if (auto current_best = Particle<NUM_VARS>::get_Best(swarm);
+    if (const auto current_best = Particle<NUM_VARS>::get_Best(swarm);
         current_best.dominates(pBest_position)) {
       pBest_position = current_best;
     }
 
-    auto current_weight = calc_weight(i);
-    auto current_mutation_propablity = calc_mutation_propablity(i);
+    const auto current_weight = calc_weight(i);
+    const auto current_mutation_propablity = calc_mutation_propablity(i);
     for (auto &particle : swarm) {
       particle.update(pBest_position, problem, current_weight, coefficients,
                       current_mutation_propablity);
