@@ -204,9 +204,6 @@ template <size_t SWARM_SIZE, size_t NUM_VARS> struct Swarm {
   }
 
   [[nodiscard]] constexpr Particle get_Best() const {
-    // TODO: this is not correct if a does not dominate b then there is no
-    // garantie b dominates a. there should be a sudo random best from non
-    // dominated ones
     return *std::min_element(
         particles.begin(), particles.end(),
         [](const auto &particle_a, const auto &particle_b) {
