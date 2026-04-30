@@ -24,6 +24,15 @@ struct Cost {
   double infeasiblity{0};
 };
 
+
+[[nodiscard]] constexpr bool operator<(const Cost& lhs,const Cost& rhs) {
+  if (lhs.infeasiblity == 0 && rhs.infeasiblity > 0) return true;
+  if (lhs.infeasiblity > 0 && rhs.infeasiblity == 0) return false;
+  if (lhs.infeasiblity > 0 && rhs.infeasiblity > 0)
+    return lhs.infeasiblity < rhs.infeasiblity;
+  return lhs.objective < rhs.objective;
+}
+
 template <size_t NUM_VARS> using variables = std::array<double, NUM_VARS>;
 
 using Problem = std::function<Cost(std::span<double>)>;
@@ -55,9 +64,8 @@ public:
     updatePBest();
   }
 
-  [[nodiscard]] constexpr bool dominates(const Particle &other) const & {
-    return ((cost.infeasiblity <= other.cost.infeasiblity) &&
-            (cost.objective < other.cost.objective));
+  [[nodiscard]] constexpr bool dominates(const Particle& other) const& {
+    return cost < other.cost;
   }
 
   constexpr void info(std::ostream &out = std::cout) const & {
@@ -134,8 +142,7 @@ private:
     }
   }
   constexpr void updatePBest() {
-    if ((cost.infeasiblity <= pBest_cost.infeasiblity) &&
-        (cost.objective < pBest_cost.objective)) {
+    if ((cost < pBest_cost) || !(pBest_cost < cost)) {
       pBest_position = position;
       pBest_cost.objective = cost.objective;
       pBest_cost.infeasiblity = cost.infeasiblity;
