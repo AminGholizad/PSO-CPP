@@ -24,10 +24,7 @@ pso(const variables<NUM_VARS> &lower_bound,
     const Weight_range &weight_range = DEFAULT_WEIGHT_RANGE,
     const double mu = 0.1) {
   auto calc_weight = [&](size_t iter) {
-    return ((static_cast<double>(max_iter - iter) -
-             (weight_range.begin - weight_range.end)) /
-            static_cast<double>(max_iter)) +
-           weight_range.end;
+    return weight_range.begin + (weight_range.end - weight_range.begin) * static_cast<double>(iter) / static_cast<double>(max_iter);
   };
 
   auto calc_mutation_propablity = [&](size_t iter) {
