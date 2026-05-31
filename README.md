@@ -11,4 +11,4 @@ Constraints and objective in one function.
 4. The Mutation is used to avoid local minima.
 
 # todo
-[] More explanation of the functionality
+- [] More explanation of the functionality
