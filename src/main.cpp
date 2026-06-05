@@ -26,8 +26,8 @@ constexpr double pi = std::numbers::pi;
 int main() {
     const size_t swarm_size{200};
     const size_t max_iter{2000};
-    const pso::variables lower_bound{0.0, 0.0, 0.0, 0.0};
-    const pso::variables upper_bound{pi / 2, pi / 2, pi / 2, pi / 2};
+    const pso::Variables lower_bound{0.0, 0.0, 0.0, 0.0};
+    const pso::Variables upper_bound{pi / 2, pi / 2, pi / 2, pi / 2};
     const auto solution = pso::pso<swarm_size>(lower_bound, upper_bound, cost_fcn, max_iter);
     solution.gBest.info();
     std::ofstream file("./result.csv");

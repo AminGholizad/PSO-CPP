@@ -25,23 +25,27 @@ struct Cost {
 };
 
 [[nodiscard]] constexpr bool operator<(const Cost &lhs, const Cost &rhs) {
-    if (lhs.infeasibility == 0 && rhs.infeasibility > 0)
+    if (lhs.infeasibility == 0 && rhs.infeasibility > 0) {
         return true;
-    if (lhs.infeasibility > 0 && rhs.infeasibility == 0)
+    }
+    if (lhs.infeasibility > 0 && rhs.infeasibility == 0) {
         return false;
-    if (lhs.infeasibility > 0 && rhs.infeasibility > 0)
+    }
+    if (lhs.infeasibility > 0 && rhs.infeasibility > 0) {
         return lhs.infeasibility < rhs.infeasibility;
+    }
     return lhs.objective < rhs.objective;
 }
 
-template <size_t NUM_VARS> using variables = std::array<double, NUM_VARS>;
+template <size_t NUM_VARS> using Variables = std::array<double, NUM_VARS>;
 
 using Problem = std::function<Cost(std::span<const double>)>;
 
 template <size_t NUM_VARS> class Particle {
   public:
     constexpr Particle() = default;
-    constexpr Particle(variables<NUM_VARS> lower, variables<NUM_VARS> upper, const Problem &problem)
+    constexpr Particle(Variables<NUM_VARS> lower, Variables<NUM_VARS> upper,
+                       const Problem &problem)
         : lower_bound{std::move(lower)}, upper_bound{std::move(upper)} {
         for (size_t i = 0; i < NUM_VARS; i++) {
             position[i] = rnd::unifrnd(lower_bound[i], upper_bound[i]);
@@ -163,28 +167,28 @@ template <size_t NUM_VARS> class Particle {
         }
     }
 
-    variables<NUM_VARS> lower_bound{};
-    variables<NUM_VARS> upper_bound{};
-    variables<NUM_VARS> position{};
-    variables<NUM_VARS> velocity{};
-    variables<NUM_VARS> pBest_position{};
+    Variables<NUM_VARS> lower_bound{};
+    Variables<NUM_VARS> upper_bound{};
+    Variables<NUM_VARS> position{};
+    Variables<NUM_VARS> velocity{};
+    Variables<NUM_VARS> pBest_position{};
     Cost cost{};
     Cost pBest_cost{};
 };
 
 template <size_t SWARM_SIZE, size_t NUM_VARS> struct Swarm {
-    using Particle = Particle<NUM_VARS>;
-    std::array<Particle, SWARM_SIZE> particles;
+    using Particle_t = Particle<NUM_VARS>;
+    std::array<Particle_t, SWARM_SIZE> particles;
 
     constexpr Swarm() = default;
-    constexpr Swarm(const variables<NUM_VARS> &lower_bound, const variables<NUM_VARS> &upper_bound,
-                    const Problem &problem) {
+    constexpr Swarm(const Variables<NUM_VARS> &lower_bound,
+                    const Variables<NUM_VARS> &upper_bound, const Problem &problem) {
         for (auto &particle : particles) {
-            particle = Particle(lower_bound, upper_bound, problem);
+            particle = Particle_t(lower_bound, upper_bound, problem);
         }
     }
 
-    constexpr void update_particles(const Particle &gBest, const Problem &problem,
+    constexpr void update_particles(const Particle_t &gBest, const Problem &problem,
                                     const double weight, const Coefficient &coefficients,
                                     const double mutation_probablity) {
         for (auto &particle : particles) {
@@ -192,17 +196,17 @@ template <size_t SWARM_SIZE, size_t NUM_VARS> struct Swarm {
         }
     }
 
-    constexpr void export_csv(std::ostream &out) const { Particle::export_csv(out, particles); }
+    constexpr void export_csv(std::ostream &out) const { Particle_t::export_csv(out, particles); }
 
-    [[nodiscard]] constexpr Particle get_Best() const {
+    [[nodiscard]] constexpr Particle_t get_Best() const {
         return *std::min_element(particles.begin(), particles.end(),
                                  [](const auto &particle_a, const auto &particle_b) {
                                      return particle_a.dominates(particle_b);
                                  });
     }
 
-    constexpr explicit operator std::span<Particle>() { return particles; }
-    constexpr explicit operator std::span<const Particle>() const { return particles; }
+    constexpr explicit operator std::span<Particle_t>() { return particles; }
+    constexpr explicit operator std::span<const Particle_t>() const { return particles; }
 };
 } // namespace pso
 #endif // PARTICLE_H

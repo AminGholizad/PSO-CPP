@@ -17,7 +17,7 @@ template <size_t NUM_VARS, size_t SWARM_SIZE> struct Solution {
 
 template <size_t SWARM_SIZE, size_t NUM_VARS>
 [[nodiscard]] constexpr Solution<NUM_VARS, SWARM_SIZE>
-pso(const variables<NUM_VARS> &lower_bound, const variables<NUM_VARS> &upper_bound,
+pso(const Variables<NUM_VARS> &lower_bound, const Variables<NUM_VARS> &upper_bound,
     const Problem &problem, const size_t max_iter = 1000,
     const Coefficient &coefficients = DEFAULT_COEFFICIENTS,
     const Weight_range &weight_range = DEFAULT_WEIGHT_RANGE, const double mu = 0.1) {
